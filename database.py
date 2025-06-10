@@ -4,11 +4,11 @@ import os
 
 def get_db_connection():
     conn = mysql.connector.connect(
-    host="ballast.proxy.rlwy.net",
-    user="root",
-    password="TxGoxWtQXRPwyaUNaiOHkixClkQUhPpo",
-    database="railway",
-    port=48991
+    host=os.getenv("MYSQLHOST"),
+    user=os.getenv("MYSQLUSER", "root"),
+    password=os.getenv("MYSQLPASSWORD"),
+    database=os.getenv("MYSQLDATABASE", "railway"),
+    port=int(os.getenv("MYSQLPORT", 48991))
 )
     
     try:
