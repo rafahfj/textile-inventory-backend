@@ -2,3 +2,5 @@ fastapi
 mysql-connector-python
 uvicorn
 dotenv
+passlib
+python-jose[cryptography]

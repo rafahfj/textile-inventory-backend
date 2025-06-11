@@ -1,34 +1,28 @@
 from fastapi import HTTPException
-from mysql.connector import Error, MySQLConnection
+from mysql.connector import Error
+from mysql.connector import MySQLConnection
 from models.user import UserCreate
-import hashlib
+from utils.hash import hash_password
 
-def create_user_db(user: UserCreate, conn: MySQLConnection):
+def create_user_db(user: UserCreate, conn:MySQLConnection):
     cursor = conn.cursor(dictionary=True)
-    hashed_password = hashlib.sha256(user.password.encode()).hexdigest()
-
     try:
-        cursor.execute("""
-            INSERT INTO users (username, password, role)
-            VALUES (%s, %s, %s)
-        """, (user.username, hashed_password, user.role))
+        cursor.execute("SELECT id FROM users WHERE email = %s", (user["email"],))
+        if cursor.fetchone():
+            raise HTTPException(status_code=400, detail="Email or Username already registered")
+
+        hashed = hash_password(user["password"])
+
+        cursor.execute(
+            "INSERT INTO users (username, fullname, email, password, role) VALUES (%s, %s, %s, %s, %s)",
+            (user["username"], user["fullname"],user["email"],hashed, user["role"])
+        )
         conn.commit()
-        user_id = cursor.lastrowid
-
-        cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-        return cursor.fetchone()
-
+        cursor.execute("SELECT * FROM users ORDER BY id DESC LIMIT 1")
+        return cursor.fetchall()
     except Error as e:
         conn.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursor.close()
 
-
-def get_all_users_db(conn: MySQLConnection):
-    cursor = conn.cursor(dictionary=True)
-    try:
-        cursor.execute("SELECT * FROM users")
-        return cursor.fetchall()
-    finally:
-        cursor.close()
