@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from mysql.connector import Error
 from mysql.connector import MySQLConnection
 from models.user import UserCreate
-from utils.hash import hash_password
+from utils.auth import hash_password
 
 def create_user_db(user: UserCreate, conn:MySQLConnection):
     cursor = conn.cursor(dictionary=True)
