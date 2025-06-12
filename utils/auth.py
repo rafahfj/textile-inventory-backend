@@ -38,18 +38,23 @@ def decode_access_token(token: str):
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     payload = decode_access_token(token)
-    user_email = payload.get("sub")
+    user_email = payload.get("email")
     if not user_email:
         raise HTTPException(status_code=401, detail="Invalid token payload")
-    return payload
+    return {
+            "id": payload.get("id"),
+            "username": payload.get("username"),
+            "fullname": payload.get("fullname"),
+            "email": payload.get("email"),
+            "role": payload.get("role")
+        }
 
-def require_role(*allowed_roles: Literal["admin", "staff", "viewer"]) -> Callable:
+def require_role(*allowed_roles: list) -> Callable:
     def dependency(user: dict = Depends(get_current_user)):
-        role = user.get("role")
-        if role not in allowed_roles:
+        if user["role"] not in allowed_roles:
             raise HTTPException(
                 status_code=403,
-                detail=f"Access denied for role '{role}'",
+                detail=f"Access denied for role '{user["user"]}'",
             )
         return user 
     return dependency

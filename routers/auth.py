@@ -38,7 +38,7 @@ def login_user(user: UserLogin, conn: mysql.connector.connection.MySQLConnection
     if not db_user or not verify_password(user.password, db_user["password"]):  # jika db_user tidak ada hasil atau password pada database dengan password yang dimasukan tidak cocok
         raise HTTPException(status_code=401, detail="Invalid email or password")  # kembalikan pemberitahuan bahwa password salah atau user tidak ditemukan
 
-    token = create_access_token({"sub": db_user["email"], "role": db_user["role"],"fullname": db_user["fullname"], "username": db_user["username"], "id": db_user["id"] })
+    token = create_access_token({"email": db_user["email"], "role": db_user["role"],"fullname": db_user["fullname"], "username": db_user["username"], "id": db_user["id"] })
     return {"access_token": token, "token_type": "bearer"} # membuat token dengan body keseluruhan detail user dan mengembalikan tokennya
 
 @router.get("/req-all", response_model=list)

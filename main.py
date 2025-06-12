@@ -5,8 +5,8 @@ import os
 
 app = FastAPI()
 
-app.include_router(product.router)
 app.include_router(auth.router)
+app.include_router(product.router)
 app.include_router(supplier.router)
 app.include_router(incoming.router)
 app.include_router(outgoing.router)

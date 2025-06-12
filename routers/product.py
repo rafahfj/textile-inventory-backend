@@ -23,10 +23,10 @@ def create_product(product: ProductCreate, conn: MySQLConnection = Depends(get_d
 def get_products( conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role(['staff', 'admin', 'viewer'])) ):
     return get_all_products_db(conn)
 
-@router.get("/{product_id}", response_model=ProductRead)
+@router.get("/{product_id}/", response_model=ProductRead)
 def get_product(product_id: int, conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role(['staff', 'admin', 'viewer']))):
     return get_product_by_id_db(product_id,conn)
 
-@router.delete("/{product_id}")
-def delete_product(product_id: int,  conn: MySQLConnection = Depends(get_db_connection)):
+@router.delete("/{product_id}/")
+def delete_product(product_id: int,  conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role(['staff', 'admin']))):
     return delete_product_db(product_id,conn)

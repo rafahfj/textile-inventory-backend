@@ -7,7 +7,7 @@ router = APIRouter(
     tags=["Dashboard"]
 )
 
-@router.get("/summary")
+@router.get("/summary/")
 def get_dashboard_summary(conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
     cursor = conn.cursor(dictionary=True)
 
