@@ -1,6 +1,5 @@
 from fastapi import Depends, HTTPException
 from mysql.connector import Error, MySQLConnection
-from database import get_db_connection
 from models.product import ProductCreate
 
 def create_product_db(

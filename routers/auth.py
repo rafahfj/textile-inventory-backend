@@ -1,8 +1,8 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from models.user import UserCreate, UserLogin
 from utils.auth import hash_password, verify_password, create_access_token
 from database import get_db_connection
+from utils.auth import require_role
 import mysql.connector
 
 router = APIRouter(
@@ -40,3 +40,12 @@ def login_user(user: UserLogin, conn: mysql.connector.connection.MySQLConnection
 
     token = create_access_token({"sub": db_user["email"], "role": db_user["role"],"fullname": db_user["fullname"], "username": db_user["username"], "id": db_user["id"] })
     return {"access_token": token, "token_type": "bearer"} # membuat token dengan body keseluruhan detail user dan mengembalikan tokennya
+
+@router.get("/req-all", response_model=list)
+def request_all_user( user = Depends(require_role(['admin'])), conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users")
+    all_users = cursor.fetchall()
+    cursor.close()
+
+    return all_users
