@@ -1,4 +1,3 @@
-# routers/auth.py
 
 from fastapi import APIRouter, Depends, HTTPException
 from models.user import UserCreate, UserLogin
@@ -28,15 +27,16 @@ def register_user(user: UserCreate, conn: mysql.connector.connection.MySQLConnec
 
     return {"message": "User registered successfully"}
 
+# route login
 @router.post("/login")
-def login_user(user: UserLogin, conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE email = %s", (user.email,))
-    db_user = cursor.fetchone()
-    cursor.close()
+def login_user(user: UserLogin, conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)): # menerima dict login dan mysql connection
+    cursor = conn.cursor(dictionary=True)  # variabel method cursor
+    cursor.execute("SELECT * FROM users WHERE email = %s", (user.email,))  # execute syntax mysql mencari row user menggunakan email
+    db_user = cursor.fetchone()  # melakukan fetch satu row setelah pencarian email
+    cursor.close()  # menutup jaringan ke maysql
 
-    if not db_user or not verify_password(user.password, db_user["password"]):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+    if not db_user or not verify_password(user.password, db_user["password"]):  # jika db_user tidak ada hasil atau password pada database dengan password yang dimasukan tidak cocok
+        raise HTTPException(status_code=401, detail="Invalid email or password")  # kembalikan pemberitahuan bahwa password salah atau user tidak ditemukan
 
-    token = create_access_token({"sub": db_user["email"], "role": db_user["role"]})
-    return {"access_token": token, "token_type": "bearer"}
+    token = create_access_token({"sub": db_user["email"], "role": db_user["role"],"fullname": db_user["fullname"], "username": db_user["username"], "id": db_user["id"] })
+    return {"access_token": token, "token_type": "bearer"} # membuat token dengan body keseluruhan detail user dan mengembalikan tokennya

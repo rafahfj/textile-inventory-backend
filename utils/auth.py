@@ -1,16 +1,16 @@
-# utils/auth.py
 
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
+from typing import Literal, Callable
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY", "SayaYakinSayaAkanKayaRayaBanyakUang")
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
@@ -41,4 +41,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     user_email = payload.get("sub")
     if not user_email:
         raise HTTPException(status_code=401, detail="Invalid token payload")
-    return user_email
+    return payload
+
+def require_role(*allowed_roles: Literal["admin", "staff", "viewer"]) -> Callable:
+    def dependency(user: dict = Depends(get_current_user)):
+        role = user.get("role")
+        if role not in allowed_roles:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Access denied for role '{role}'",
+            )
+        return user 
+    return dependency

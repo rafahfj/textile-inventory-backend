@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from routers import auth, product, supplier, incoming, outgoing
 import uvicorn
