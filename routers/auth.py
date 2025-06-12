@@ -42,7 +42,7 @@ def login_user(user: UserLogin, conn: mysql.connector.connection.MySQLConnection
     return {"access_token": token, "token_type": "bearer"} # membuat token dengan body keseluruhan detail user dan mengembalikan tokennya
 
 @router.get("/req-all", response_model=list)
-def request_all_user( user = Depends(require_role(['admin'])), conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
+def request_all_user( user = Depends(require_role('admin')), conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM users")
     all_users = cursor.fetchall()
