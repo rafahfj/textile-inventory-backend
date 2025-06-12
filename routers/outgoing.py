@@ -16,17 +16,17 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=OutgoingRead)
-def create_outgoing(data: OutgoingCreate, conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role(['staff', 'admin']))):
+def create_outgoing(data: OutgoingCreate, conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role('staff', 'admin'))):
     return create_outgoing_db(data, conn)
 
 @router.get("/", response_model=list[OutgoingRead])
-def get_all_outgoing(conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role(['staff', 'admin', 'viewer']))):
+def get_all_outgoing(conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role('staff', 'admin', 'viewer'))):
     return get_all_outgoing_db(conn)
 
 @router.get("/{id}", response_model=OutgoingRead)
-def get_outgoing(id: int, conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role(['staff', 'admin', 'viewer']))):
+def get_outgoing(id: int, conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role('staff', 'admin', 'viewer'))):
     return get_outgoing_by_id_db(id, conn)
 
 @router.delete("/{id}")
-def delete_outgoing(id: int, conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role(['staff', 'admin']))):
+def delete_outgoing(id: int, conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role('staff', 'admin'))):
     return delete_outgoing_db(id, conn)
