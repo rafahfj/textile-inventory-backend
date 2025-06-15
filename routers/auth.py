@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 @router.post("/register")
-def register_user(user: UserCreate, conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
+def register_user(user: UserCreate, admin = Depends(require_role('admin')), conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT id FROM users WHERE email = %s", (user.email,))
     if cursor.fetchone():
@@ -35,8 +35,10 @@ def login_user(user: UserLogin, conn: mysql.connector.connection.MySQLConnection
     db_user = cursor.fetchone()  # melakukan fetch satu row setelah pencarian email
     cursor.close()  # menutup jaringan ke maysql
 
-    if not db_user or not verify_password(user.password, db_user["password"]):  # jika db_user tidak ada hasil atau password pada database dengan password yang dimasukan tidak cocok
-        raise HTTPException(status_code=401, detail="Invalid email or password")  # kembalikan pemberitahuan bahwa password salah atau user tidak ditemukan
+    if not db_user:
+        raise HTTPException(status_code=401, detail="Invalid email or email does not registered") 
+    if not verify_password(user.password, db_user["password"]):  # jika db_user tidak ada hasil atau password pada database dengan password yang dimasukan tidak cocok
+        raise HTTPException(status_code=401, detail="Invalid password")  # kembalikan pemberitahuan bahwa password salah atau user tidak ditemukan
 
     token = create_access_token({"email": db_user["email"], "role": db_user["role"],"fullname": db_user["fullname"], "username": db_user["username"], "id": db_user["id"] })
     return {"access_token": token, "token_type": "bearer"} # membuat token dengan body keseluruhan detail user dan mengembalikan tokennya
