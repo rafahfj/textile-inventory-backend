@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 @router.post("/register")
-def register_user(user: UserCreate, admin = Depends(require_role('admin')), conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
+def register_user(user: UserCreate, conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT id FROM users WHERE email = %s", (user.email,))
     if cursor.fetchone():

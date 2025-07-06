@@ -15,7 +15,7 @@ app.include_router(outgoing.router)
 origins = [
     "http://localhost:4200",
     "http://127.0.0.1:4200",
-    "https://textile-inventory.hbus.com", 
+    "https://textile-inventory.vercel.app", 
 ]
 
 app.add_middleware(
