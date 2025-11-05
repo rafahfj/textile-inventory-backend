@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 host = os.getenv("MYSQLHOST","localhost")
-user = os.getenv("MYSQLUSER", "appuser")
+user = os.getenv("MYSQLUSER", "root")
 password = os.getenv("MYSQLPW","12345678")
 database = os.getenv("MYSQLDATABASE", "textile_inventory")
 port = int(os.getenv("MYSQLPORT", "3306"))

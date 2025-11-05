@@ -18,7 +18,7 @@ router = APIRouter(
 @router.post("/", response_model=ProductRead)
 def create_product(product: ProductCreate, conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role('staff', 'admin'))):
     return create_product_db(product,conn)
-
+    
 @router.get("/", response_model=list[ProductRead] )
 def get_products( conn: MySQLConnection = Depends(get_db_connection), user = Depends(require_role('staff', 'admin', 'viewer')) ):
     return get_all_products_db(conn)

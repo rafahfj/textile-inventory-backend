@@ -16,8 +16,13 @@ def create_incoming_db(data: IncomingCreate, conn: MySQLConnection = Depends(get
             data.user_id,
             data.note
         ))
-        conn.commit()
         new_id = cursor.lastrowid
+        cursor.execute("""
+        UPDATE products
+        SET current_stock = current_stock + %s
+        WHERE id = %s
+    """, (data.qty, data.product_id))
+        conn.commit()
         cursor.execute("SELECT * FROM stock_in WHERE id = %s", (new_id,))
         return cursor.fetchone()
     except Error as e:

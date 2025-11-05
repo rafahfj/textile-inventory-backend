@@ -6,7 +6,7 @@ class OutgoingCreate(BaseModel):
     product_id: int
     qty: int
     date: date
-    purpose: str
+    note: str
     user_id: int
     note: Optional[str] = None
 
@@ -15,7 +15,8 @@ class OutgoingRead(BaseModel):
     product_id: int
     qty: int
     date: date
-    purpose: str
+    purpose: str    
+    note: str
     user_id: int
     note: Optional[str]
 

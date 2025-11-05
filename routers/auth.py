@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
 from fastapi.responses import JSONResponse
 from models.user import UserCreate, UserLogin
-from utils.auth import hash_password, verify_password, create_access_token
+from utils.auth import SECRET_KEY, hash_password, verify_password, create_access_token
+from urllib.parse import quote
 from database import get_db_connection
-from utils.auth import require_role
+from utils.auth import require_role, get_current_user
+import jwt
 import json
 import mysql.connector
 
@@ -13,7 +15,7 @@ router = APIRouter(
 )
 
 @router.post("/register")
-def register_user( user: UserCreate, admin = Depends(require_role('admin')),conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
+def register_user( user: UserCreate, role = Depends(require_role('admin')), conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT id FROM users WHERE email = %s", (user.email,))
     if cursor.fetchone():
@@ -51,7 +53,7 @@ def login_user(user: UserLogin, response: Response, conn: mysql.connector.connec
     # Tentukan apakah ini lingkungan pengembangan (HTTP) atau produksi (HTTPS)
     # Anda bisa membuat variabel lingkungan atau konfigurasi untuk ini
     # Contoh sederhana untuk localhost:
-    is_secure_env = True # Biasanya False untuk http://localhost
+    is_secure_env = False # Biasanya False untuk http://localhost
 
     response.set_cookie(
         key="access_token",
@@ -62,17 +64,23 @@ def login_user(user: UserLogin, response: Response, conn: mysql.connector.connec
                       # Jika di produksi, setel ke domain Anda, misal "example.com"
         secure=is_secure_env, # PENTING: True jika HTTPS, False jika HTTP
         httponly=True, # PENTING: Mencegah akses dari JavaScript (keamanan)
-        samesite="None" # PENTING: Atau "None" jika Anda butuh cookie untuk cross-site (dan set secure=True)
+        samesite="Lax" # PENTING: Atau "None" jika Anda butuh cookie untuk cross-site (dan set secure=True)
     )
     response.set_cookie(
         key="user_info",
-        value=json.dumps({"email": db_user["email"], "role": db_user["role"],"fullname": db_user["fullname"], "username": db_user["username"]}),
+        value=quote(json.dumps({"email": db_user["email"],"user_id": db_user["id"], "role": db_user["role"],"fullname": db_user["fullname"], "username": db_user["username"]})),
         max_age=max_age_seconds,
+        secure=is_secure_env, # PENTING: True jika HTTPS, False jika HTTP
+        httponly=False,
+        samesite="Lax"
     )
-    # --- Akhir Perubahan ---
 
-    return "Login Succesfull"
+    return {"email": db_user["email"], "role": db_user["role"],"fullname": db_user["fullname"], "username": db_user["username"]}
  # membuat token dengan body keseluruhan detail user dan mengembalikan tokennya
+
+@router.get("/protected")
+def protected_route(current_user = Depends(get_current_user)):
+    return {"message": "Access granted", "user": current_user}
 
 @router.get("/req-all", response_model=list)
 def request_all_user( user = Depends(require_role('admin')), conn: mysql.connector.connection.MySQLConnection = Depends(get_db_connection)):
@@ -82,3 +90,11 @@ def request_all_user( user = Depends(require_role('admin')), conn: mysql.connect
     cursor.close()
 
     return all_users
+
+@router.post("/logout")
+def logout_user(response: Response):
+    # Hapus cookie dengan cara mengatur max_age=0 atau menghapus nilainya
+    response.delete_cookie(key="access_token", path="/")
+    response.delete_cookie(key="user_info", path="/")
+
+    return {"message": "Logout successful"}

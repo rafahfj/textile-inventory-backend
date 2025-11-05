@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, product, supplier, incoming, outgoing
+from routers import auth, product, supplier, incoming, outgoing, dashboard
 import uvicorn
 import os
 
@@ -11,6 +11,7 @@ app.include_router(product.router)
 app.include_router(supplier.router)
 app.include_router(incoming.router)
 app.include_router(outgoing.router)
+app.include_router(dashboard.router)
 
 origins = [
     "http://localhost:4200",

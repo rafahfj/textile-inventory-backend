@@ -28,7 +28,7 @@ def get_dashboard_summary(conn: mysql.connector.connection.MySQLConnection = Dep
         FROM products
         WHERE current_stock < min_stock
     """)
-    low_stock_products = cursor.fetchall()
+    low_stock_products = cursor.fetchall() or 0
 
     cursor.execute("SELECT price, current_stock FROM products")
     products = cursor.fetchall()

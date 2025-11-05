@@ -5,19 +5,28 @@ from models.outgoing import OutgoingCreate
 def create_outgoing_db(data: OutgoingCreate, conn: MySQLConnection):
     cursor = conn.cursor(dictionary=True)
     try:
+        cursor.execute("SELECT current_stock FROM products WHERE id = %s", (data.product_id,))
+        product = cursor.fetchone()
+
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        if product["current_stock"] < data.qty:
+            raise HTTPException(status_code=400, detail="Insufficient stock")
+
         cursor.execute("""
-            INSERT INTO stock_out (product_id, qty, date, purpose, user_id, note)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (
-            data.product_id,
-            data.qty,
-            data.date,
-            data.purpose,
-            data.user_id,
-            data.note
-        ))
-        conn.commit()
+            INSERT INTO stock_out (product_id, qty, date, purpose, user_id)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (data.product_id, data.qty, data.date, data.note, data.user_id))
+
         new_id = cursor.lastrowid
+
+        cursor.execute("""
+            UPDATE products
+            SET current_stock = current_stock - %s
+            WHERE id = %s
+        """, (data.qty, data.product_id))
+
+        conn.commit()
         cursor.execute("SELECT * FROM stock_out WHERE id = %s", (new_id,))
         return cursor.fetchone()
     except Error as e:
