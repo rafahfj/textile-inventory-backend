@@ -81,7 +81,7 @@ def require_role(*allowed_roles: str) -> Callable:
         if user["role"] not in allowed_roles:
             raise HTTPException(
                 status_code=403,
-                detail=f"Access denied for role '{user["role"]}'",
+                detail=f"Access denied for role '{user['role']}'",
             )
         return user 
     return dependency
