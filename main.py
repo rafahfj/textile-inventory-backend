@@ -17,7 +17,7 @@ origins = [
     "http://localhost:4200",
     "https://localhost:4200",
     "http://127.0.0.1:4200",
-    "https://textile-inventory.vercel.app", 
+    "https://textile-inventory.rafahfj.site"
     "https://localhost.localdomain:4200/"
 ]
 
@@ -31,5 +31,5 @@ app.add_middleware(
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    print(f"--- Starting Uvicorn server on localhost:{port} ---")
-    uvicorn.run(app, host="localhost", port=port)
+    print(f"--- Starting Uvicorn server on 0.0.0.0:{port} ---")
+    uvicorn.run(app, host="0.0.0.0", port=port)
